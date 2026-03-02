@@ -77,6 +77,15 @@
                     <p>あなたの手相から読み取れる運勢です</p>
                 </div>
                 <div class="result-cards" id="resultCards"></div>
+                <div class="result-enhance-section">
+                    <div class="api-key-row">
+                        <label for="apiKeyInput" class="api-key-label">OpenAI APIキー（任意）</label>
+                        <input type="password" id="apiKeyInput" class="api-key-input" placeholder="sk-proj-..." autocomplete="off">
+                        <button type="button" class="btn-secondary btn-small" id="saveApiKeyBtn">保存</button>
+                    </div>
+                    <p class="api-key-hint">より詳細な鑑定結果を見るには、APIキーを入力して保存してください。</p>
+                    <button class="btn-primary" id="enhanceBtn">より詳細な鑑定結果を見る</button>
+                </div>
                 <div class="result-actions">
                     <button class="btn-secondary" id="restartBtn">もう一度鑑定する</button>
                 </div>

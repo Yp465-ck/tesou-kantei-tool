@@ -14,6 +14,23 @@
     $('#prevBtn').addEventListener('click', prevStep);
     $('#nextBtn').addEventListener('click', nextStep);
     $('#restartBtn').addEventListener('click', restart);
+    $('#enhanceBtn').addEventListener('click', enhanceWithAI);
+    $('#saveApiKeyBtn').addEventListener('click', saveApiKey);
+    const savedKey = localStorage.getItem('openai_api_key');
+    if (savedKey && $('#apiKeyInput')) $('#apiKeyInput').value = savedKey;
+  }
+
+  function saveApiKey() {
+    const input = $('#apiKeyInput');
+    if (!input) return;
+    const key = input.value.trim();
+    if (key) {
+      localStorage.setItem('openai_api_key', key);
+      alert('APIキーを保存しました。');
+    } else {
+      localStorage.removeItem('openai_api_key');
+      alert('APIキーを削除しました。');
+    }
   }
 
   // ===== Navigation =====
@@ -316,6 +333,12 @@
     const btn = $('#enhanceBtn');
     if (!state.lastResults || state.lastResults.length === 0) return;
 
+    const apiKey = ($('#apiKeyInput') && $('#apiKeyInput').value.trim()) || localStorage.getItem('openai_api_key') || '';
+    if (!apiKey) {
+      alert('APIキーを入力して「保存」をクリックしてください。');
+      return;
+    }
+
     const cardsToSend = state.lastResults
       .filter((r) => r.content && r.content.trim() !== '')
       .map((r) => ({ icon: r.icon, title: r.title, content: r.content, tags: r.tags }));
@@ -330,7 +353,7 @@
       const res = await fetch(base + '/api/enhance', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cards: cardsToSend })
+        body: JSON.stringify({ cards: cardsToSend, apiKey })
       });
 
       const contentType = res.headers.get('content-type');
@@ -343,9 +366,7 @@
           throw new Error('この機能はデプロイ先（Vercel）でのみ利用できます。');
         }
         if (res.status === 500) {
-          throw new Error(
-            'サーバーエラーです。Vercelの「Settings → Environment Variables」で OPENAI_API_KEY が設定されているか確認し、再デプロイしてください。'
-          );
+          throw new Error('APIキーが正しくないか、設定されていません。もう一度確認してください。');
         }
         throw new Error('サーバーからの応答形式が不正です。（ステータス: ' + res.status + '）');
       }
