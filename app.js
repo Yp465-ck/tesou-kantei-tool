@@ -352,10 +352,10 @@
       });
       state.lastResults = merged;
       renderResults(merged);
-      btn.textContent = 'AIで文章を整える（完了）';
+      btn.textContent = 'より詳細な鑑定結果を見る（完了）';
     } catch (err) {
       alert('AIでの文章整形に失敗しました。' + (err.message || ''));
-      btn.textContent = 'AIで文章を整える';
+      btn.textContent = 'より詳細な鑑定結果を見る';
     } finally {
       btn.disabled = false;
     }
