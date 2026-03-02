@@ -308,14 +308,6 @@
         <div class="result-card-body">
           ${result.content.split('\n').filter(Boolean).map((p) => `<p>${p}</p>`).join('')}
         </div>
-        ${
-          result.tags && result.tags.length > 0
-            ? `<div class="result-basis">
-                <div class="result-basis-title">根拠となる線</div>
-                ${result.tags.map((t) => `<span class="result-tag">${t}</span>`).join('')}
-              </div>`
-            : ''
-        }
       `;
       cards.appendChild(card);
     });
@@ -440,10 +432,8 @@
     });
     if (kanjoSpecialArr.some((v) => v !== 'none')) tags.push('感情線の特殊形状');
 
-    const opening = '手のひら全体の印象と、知能線・感情線から読み取れる特徴を重ねて見ると、あなたらしい人柄や才能の傾向が見えてきます。';
-    const closing = 'このように、複数の線が織りなすあなたの人物像は、他に替えがたい個性を持っていることが読み取れます。';
     const groups = [overallParts, chinoParts, kanjoParts];
-    const content = buildCompositeContent(groups, opening, closing);
+    const content = buildCompositeContent(groups, '', '');
     return {
       icon: '✨',
       title: '性格・才能タイプ',
@@ -483,10 +473,8 @@
       tags.push('感情線のカーブ');
     }
 
-    const opening = '運命線が示す働き方の傾向と、知能線・感情線から読み取れる仕事への適性を重ね合わせると、どのような働き方が向いているかが見えてきます。';
-    const closing = 'これらの特徴が相互に補い合い、あなたらしい働き方や活躍の形を形づくっています。';
     const groups = [unmeiParts, chinoParts, kanjoParts];
-    const content = buildCompositeContent(groups, opening, closing);
+    const content = buildCompositeContent(groups, '', '');
     return {
       icon: '💼',
       title: '仕事運',
@@ -526,10 +514,8 @@
     });
     if (kanjoSpecialArr.some((v) => v !== 'none')) tags.push('感情線の特殊形状');
 
-    const opening = '感情線の形・長さ・位置、そして枝分かれや二重線といった特徴を総合すると、恋愛におけるあなたの傾向や愛情の注ぎ方が読み取れます。';
-    const closing = 'これらの要素が織りなすあなたの恋愛像は、あなたらしい関わり方を示しています。';
     const groups = [baseParts, specialParts];
-    const content = buildCompositeContent(groups, opening, closing);
+    const content = buildCompositeContent(groups, '', '');
     return {
       icon: '💕',
       title: '恋愛',
@@ -556,10 +542,8 @@
       tags.push('生命線の終点');
     }
 
-    const opening = '生命線の太さ・張り出し・そして終点が向かう方向。これらを一つの流れとして読むと、体力・気力の傾向や、あなたらしい生き方が読み取れます。';
-    const closing = 'これらが示すのは、あなたらしいエネルギーの使い方と、無理のない持続の仕方です。';
     const groups = [vitalityParts, directionParts];
-    const content = buildCompositeContent(groups, opening, closing);
+    const content = buildCompositeContent(groups, '', '');
     return {
       icon: '🌿',
       title: '健康・生命力',
