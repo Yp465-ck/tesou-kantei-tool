@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>手相鑑定ツール</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="apple-touch-icon" href="data:,">
+    <meta name="theme-color" content="#5a3d94">
+</head>
+<body>
+    <!-- Sticky Header Banner -->
+    <header class="sticky-header" id="stickyHeader">
+        <div class="header-inner">
+            <h1>手相鑑定ツール</h1>
+            <div class="progress-section" id="progressSection">
+                <div class="progress-info">
+                    <span class="progress-step-label" id="progressStepLabel"></span>
+                    <span class="progress-counter" id="progressCounter"></span>
+                </div>
+                <div class="progress-bar-container">
+                    <div class="progress-bar" id="progressBar"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Start Screen -->
+            <div class="screen" id="startScreen">
+                <div class="start-content">
+                    <div class="start-icon">
+                        <svg viewBox="0 0 200 260" class="palm-icon">
+                            <path d="M100,250 C50,250 20,200 20,150 L20,90 C20,80 30,70 40,70 C50,70 55,78 55,85 L55,110 L55,50 C55,40 65,30 75,30 C85,30 90,40 90,50 L90,100 L90,30 C90,20 100,10 110,10 C120,10 125,20 125,30 L125,100 L125,50 C125,40 135,30 145,30 C155,30 160,40 160,50 L160,120 L160,80 C160,70 168,62 176,62 C184,62 190,70 190,80 L190,160 C190,210 150,250 100,250Z" fill="none" stroke="currentColor" stroke-width="3"/>
+                            <path d="M60,140 Q90,110 140,130" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4,3" opacity="0.5"/>
+                            <path d="M55,170 Q100,150 160,160" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4,3" opacity="0.5"/>
+                            <path d="M55,110 Q50,170 70,230" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4,3" opacity="0.5"/>
+                            <path d="M105,200 L105,130" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="4,3" opacity="0.5"/>
+                        </svg>
+                    </div>
+                    <h2>手相鑑定を始めましょう</h2>
+                    <p class="start-desc">全5ステップの質問に答えるだけで、あなたの手相から性格・才能・運勢を総合的に鑑定します。</p>
+                    <ul class="start-features">
+                        <li>手の全体印象から4大基本線まで丁寧にチェック</li>
+                        <li>知能線・感情線・運命線・生命線の4大基本線で鑑定</li>
+                        <li>性格・仕事運・恋愛・健康運・総合アドバイスの5カテゴリで結果を表示</li>
+                    </ul>
+                    <button class="btn-primary btn-large" id="startBtn">鑑定を始める</button>
+                </div>
+            </div>
+
+            <!-- Step Screen -->
+            <div class="screen hidden" id="stepScreen">
+                <div class="step-layout">
+                    <div class="step-content">
+                        <div class="step-header">
+                            <h2 id="stepTitle"></h2>
+                            <p id="stepDescription"></p>
+                        </div>
+                        <div class="questions-container" id="questionsContainer">
+                            <!-- Questions rendered by JS -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Screen -->
+            <div class="screen hidden" id="resultScreen">
+                <div class="result-header">
+                    <div class="result-header-icon">
+                        <svg viewBox="0 0 200 260" class="palm-icon result-palm-icon">
+                            <path d="M100,250 C50,250 20,200 20,150 L20,90 C20,80 30,70 40,70 C50,70 55,78 55,85 L55,110 L55,50 C55,40 65,30 75,30 C85,30 90,40 90,50 L90,100 L90,30 C90,20 100,10 110,10 C120,10 125,20 125,30 L125,100 L125,50 C125,40 135,30 145,30 C155,30 160,40 160,50 L160,120 L160,80 C160,70 168,62 176,62 C184,62 190,70 190,80 L190,160 C190,210 150,250 100,250Z" fill="none" stroke="currentColor" stroke-width="3"/>
+                        </svg>
+                    </div>
+                    <h2>鑑定結果</h2>
+                    <p>あなたの手相から読み取れる運勢です</p>
+                </div>
+                <div class="result-cards" id="resultCards"></div>
+                <div class="result-actions">
+                    <button class="btn-primary" id="enhanceBtn">AIで文章を整える</button>
+                    <button class="btn-secondary" id="restartBtn">もう一度鑑定する</button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Fixed Bottom Navigation (step mode) -->
+    <div class="bottom-nav hidden" id="bottomNav">
+        <div class="bottom-nav-inner">
+            <button class="btn-secondary btn-nav" id="prevBtn">戻る</button>
+            <button class="btn-primary btn-nav" id="nextBtn" disabled>次へ</button>
+        </div>
+    </div>
+
+    <script src="palm-data.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
