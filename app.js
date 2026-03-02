@@ -14,7 +14,6 @@
     $('#prevBtn').addEventListener('click', prevStep);
     $('#nextBtn').addEventListener('click', nextStep);
     $('#restartBtn').addEventListener('click', restart);
-    $('#enhanceBtn').addEventListener('click', enhanceWithAI);
   }
 
   // ===== Navigation =====
