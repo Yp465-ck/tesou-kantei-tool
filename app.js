@@ -334,7 +334,22 @@
         body: JSON.stringify({ cards: cardsToSend })
       });
 
-      const data = await res.json();
+      const contentType = res.headers.get('content-type');
+      let data;
+      if (contentType && contentType.includes('application/json')) {
+        data = await res.json();
+      } else {
+        await res.text();
+        if (res.status === 404) {
+          throw new Error('この機能はデプロイ先（Vercel）でのみ利用できます。');
+        }
+        if (res.status === 500) {
+          throw new Error(
+            'サーバーエラーです。Vercelの「Settings → Environment Variables」で OPENAI_API_KEY が設定されているか確認し、再デプロイしてください。'
+          );
+        }
+        throw new Error('サーバーからの応答形式が不正です。（ステータス: ' + res.status + '）');
+      }
       if (!res.ok) throw new Error(data.error || 'Enhancement failed');
 
       const enhanced = data.cards;
