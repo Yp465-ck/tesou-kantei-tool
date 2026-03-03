@@ -14,23 +14,6 @@
     $('#prevBtn').addEventListener('click', prevStep);
     $('#nextBtn').addEventListener('click', nextStep);
     $('#restartBtn').addEventListener('click', restart);
-    $('#enhanceBtn').addEventListener('click', enhanceWithAI);
-    $('#saveApiKeyBtn').addEventListener('click', saveApiKey);
-    const savedKey = localStorage.getItem('openai_api_key');
-    if (savedKey && $('#apiKeyInput')) $('#apiKeyInput').value = savedKey;
-  }
-
-  function saveApiKey() {
-    const input = $('#apiKeyInput');
-    if (!input) return;
-    const key = input.value.trim();
-    if (key) {
-      localStorage.setItem('openai_api_key', key);
-      alert('APIキーを保存しました。');
-    } else {
-      localStorage.removeItem('openai_api_key');
-      alert('APIキーを削除しました。');
-    }
   }
 
   // ===== Navigation =====
@@ -327,65 +310,6 @@
       `;
       cards.appendChild(card);
     });
-  }
-
-  async function enhanceWithAI() {
-    const btn = $('#enhanceBtn');
-    if (!state.lastResults || state.lastResults.length === 0) return;
-
-    const apiKey = ($('#apiKeyInput') && $('#apiKeyInput').value.trim()) || localStorage.getItem('openai_api_key') || '';
-    if (!apiKey) {
-      alert('APIキーを入力して「保存」をクリックしてください。');
-      return;
-    }
-
-    const cardsToSend = state.lastResults
-      .filter((r) => r.content && r.content.trim() !== '')
-      .map((r) => ({ icon: r.icon, title: r.title, content: r.content, tags: r.tags }));
-
-    if (cardsToSend.length === 0) return;
-
-    btn.disabled = true;
-    btn.textContent = '処理中...';
-
-    try {
-      const base = window.location.origin;
-      const res = await fetch(base + '/api/enhance', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ cards: cardsToSend, apiKey })
-      });
-
-      const contentType = res.headers.get('content-type');
-      let data;
-      if (contentType && contentType.includes('application/json')) {
-        data = await res.json();
-      } else {
-        await res.text();
-        if (res.status === 404) {
-          throw new Error('この機能はデプロイ先（Vercel）でのみ利用できます。');
-        }
-        if (res.status === 500) {
-          throw new Error('APIキーが正しくないか、設定されていません。もう一度確認してください。');
-        }
-        throw new Error('サーバーからの応答形式が不正です。（ステータス: ' + res.status + '）');
-      }
-      if (!res.ok) throw new Error(data.error || 'Enhancement failed');
-
-      const enhanced = data.cards;
-      const merged = state.lastResults.map((orig) => {
-        const found = enhanced.find((e) => e.title === orig.title);
-        return found ? { ...orig, content: found.content } : orig;
-      });
-      state.lastResults = merged;
-      renderResults(merged);
-      btn.textContent = 'より詳細な鑑定結果を見る（完了）';
-    } catch (err) {
-      alert('AIでの文章整形に失敗しました。' + (err.message || ''));
-      btn.textContent = 'より詳細な鑑定結果を見る';
-    } finally {
-      btn.disabled = false;
-    }
   }
 
   function buildCompositeContent(groups, opening, closing) {

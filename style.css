@@ -610,54 +610,6 @@ body.has-bottom-nav {
   margin-bottom: 4px;
 }
 
-.result-enhance-section {
-  margin-top: 24px;
-  padding: 20px;
-  background: var(--color-surface);
-  border-radius: var(--radius-lg);
-  border: 1px solid var(--color-border);
-}
-
-.api-key-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.api-key-label {
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: var(--color-text-secondary);
-  flex: 0 0 100%;
-}
-
-.api-key-input {
-  flex: 1;
-  min-width: 160px;
-  padding: 10px 12px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
-  font-size: 0.9rem;
-}
-
-.api-key-hint {
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-  margin-bottom: 12px;
-}
-
-.btn-small {
-  padding: 8px 14px;
-  font-size: 0.85rem;
-}
-
-.result-enhance-section .btn-primary {
-  width: 100%;
-  margin-top: 4px;
-}
-
 .result-actions {
   text-align: center;
   margin-top: 32px;
@@ -694,15 +646,6 @@ body.has-bottom-nav {
 
   .result-card-body p {
     font-size: 0.85rem;
-  }
-
-  .api-key-row {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .api-key-input {
-    min-width: 0;
   }
 
   .container {
