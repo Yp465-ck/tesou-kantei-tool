@@ -4,6 +4,17 @@ const SITE_CONFIG = {
   // TODO: 確認後に差し替え
   lineUrl: 'https://example.com/REPLACE_WITH_PROLINE_URL',
 
+  // ===== LINE版（既存の友だち向け。URLの末尾に ?from=line を付けて開く） =====
+  // LINE公式アカウントのベーシックID（@から始まるもの）
+  // TODO: 確認後に差し替え
+  lineId: '@REPLACE_ME',
+  // 「LINEで受け取る」ボタンで、トーク画面に入力済みにする文字（{keyword} は合言葉に置き換わる）
+  // プロラインのキーワード応答と完全に一致させる
+  lineMessage: '{keyword}',
+  // 公開版のURL（LINE版の「お友だちに教える」で共有するURL）
+  // TODO: 公開後に差し替え
+  publicUrl: 'https://example.com/',
+
   // タイプごとに別の登録URLを使う場合だけ設定（未設定なら lineUrl を使用）
   // 例: sasae: 'https://...'
   lineUrlByType: {},

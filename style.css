@@ -1181,3 +1181,49 @@ body {
 @media (max-width: 360px) {
   .start-title { font-size: 25px; }
 }
+
+/* ===== LINE版（既存の友だち向け） ===== */
+.line-only {
+  display: inline-block;
+  font-family: var(--serif);
+  font-size: 14px;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--plum-light), var(--plum));
+  border-radius: 999px;
+  padding: 3px 18px;
+  margin-bottom: 12px;
+  letter-spacing: 0.08em;
+}
+
+.tip {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #fbf3e6;
+  border-radius: 12px;
+}
+
+.tip strong {
+  display: block;
+  font-family: var(--serif);
+  color: var(--gold-deep);
+}
+
+.cta-lead {
+  font-size: 15px;
+  color: var(--ink-sub);
+  text-align: left;
+  margin-bottom: 16px;
+}
+
+.btn-share {
+  display: block;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid var(--plum-light);
+  border-radius: 999px;
+  color: var(--plum);
+  background: #fff;
+  font-weight: 700;
+  text-decoration: none;
+}

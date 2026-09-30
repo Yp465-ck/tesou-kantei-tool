@@ -5,9 +5,12 @@
 
   const state = { index: 0, answers: {} };
 
+  // 公開版（Instagram・note向け）と LINE版（既存の友だち向け・?from=line）の切り替え
+  const IS_LINE = new URLSearchParams(location.search).get('from') === 'line';
+
   // ===== 計測（GA4 / GTM を入れたら自動で送られる） =====
   function track(event, params) {
-    const payload = Object.assign({ diagnosis_id: D.meta.id }, params || {});
+    const payload = Object.assign({ diagnosis_id: D.meta.id, mode: IS_LINE ? 'line' : 'public' }, params || {});
     if (typeof window.gtag === 'function') window.gtag('event', event, payload);
     if (Array.isArray(window.dataLayer)) window.dataLayer.push(Object.assign({ event }, payload));
   }
@@ -27,6 +30,9 @@
     $('#startLead').innerHTML = D.meta.lead;
     $('#handTip').textContent = D.meta.handTip;
     $('#startBadges').innerHTML = D.meta.badges.map((b) => `<li>${b}</li>`).join('');
+    if (IS_LINE) {
+      $('#startBadges').insertAdjacentHTML('beforebegin', '<p class="line-only">✦ LINEの皆さま限定・完全版 ✦</p>');
+    }
     $('#readerMini').innerHTML = `${avatar('sm')}
       <div><p class="reader-mini-name">鑑定師 ${C.reader.name}</p>
       <p class="reader-mini-career">${C.reader.career.slice(0, 2).join('・')}</p></div>`;
@@ -259,6 +265,32 @@
   }
 
   // ===== 結果 =====
+  // LINE版：トーク画面を開き、合言葉を入力済みにするURL（送信すると詳しい鑑定が自動で届く）
+  function oaMessageUrl(keyword) {
+    const text = C.lineMessage.replace('{keyword}', keyword);
+    return `https://line.me/R/oaMessage/${encodeURIComponent(C.lineId)}/?${encodeURIComponent(text)}`;
+  }
+
+  function shareUrl(t) {
+    const text = `手相でわかる「あなたの取扱説明書」診断、やってみたら「${t.name}」でした！\n${C.publicUrl}`;
+    return `https://line.me/R/share?text=${encodeURIComponent(text)}`;
+  }
+
+  function lineCta(r) {
+    const t = r.type;
+    return `<div class="cta-block" id="mainCta">
+        <p class="cta-head">この鑑定結果を<br>LINEで<strong>受け取りませんか？</strong></p>
+        <p class="cta-lead">送っていただくと、あなたのタイプ別の詳しい鑑定文と、特典のご案内がトークに届きます。あとからいつでも読み返せます。</p>
+        <ol class="steps">
+          <li><span>1</span><p>下のボタンを押す</p></li>
+          <li><span>2</span><p>トーク画面に「<strong>${t.keyword}</strong>」と入った状態で開きます</p></li>
+          <li><span>3</span><p>そのまま送信するだけ</p></li>
+        </ol>
+        <a class="btn btn-line" id="lineBtn" href="${oaMessageUrl(t.keyword)}">この結果をLINEで受け取る</a>
+        <a class="btn-share" href="${shareUrl(t)}">お友だちにもこの診断を教える</a>
+      </div>`;
+  }
+
   // 優先順位：タイプ別URL → テーマ別URL → 共通URL（プロラインの登録シナリオを分けたい場合に設定）
   function lineUrl(typeKey, themeKey) {
     return C.lineUrlByType[typeKey] || C.lineUrlByTheme[themeKey] || C.lineUrl;
@@ -270,7 +302,7 @@
 
   function renderResult(r) {
     const t = r.type;
-    const url = lineUrl(r.typeKey, r.themeKey);
+    const url = IS_LINE ? oaMessageUrl(t.keyword) : lineUrl(r.typeKey, r.themeKey);
     const rare = r.rare.length
       ? `<div class="card card-rare">
           <p class="rare-badge">✦ レア線をお持ちです ✦</p>
@@ -314,25 +346,32 @@
         <h3 class="card-title">あなたの金運タイプ</h3>
         <p class="money-name">${r.money.name}</p>
         <p>${r.money.text}</p>
-        <p class="locked-inline">🔒 金運が動き出す時期と、あなたに合ったお金の増やし方は詳しい鑑定で</p>
+        ${IS_LINE
+          ? `<p class="tip"><strong>金運のヒント</strong>${t.moneyTip}</p>`
+          : '<p class="locked-inline">🔒 金運が動き出す時期と、あなたに合ったお金の増やし方は詳しい鑑定で</p>'}
       </div>
+
+      ${IS_LINE ? `
+      <div class="card">
+        <h3 class="card-title">才能の活かし方</h3>
+        <p>${t.use}</p>
+      </div>` : ''}
 
       <div class="card">
         <h3 class="card-title">${r.theme.label}について</h3>
-        <div class="teaser">
-          <p>${t.hints[r.themeKey] || r.theme.hint}</p>
-          <p>${r.theme.cliff}</p>
-        </div>
+        ${IS_LINE
+          ? `<p>${t.hints[r.themeKey] || r.theme.hint}</p><p>${r.theme.lineNext}</p>`
+          : `<div class="teaser"><p>${t.hints[r.themeKey] || r.theme.hint}</p><p>${r.theme.cliff}</p></div>`}
       </div>
 
-      <div class="cta-block" id="mainCta">
+      ${IS_LINE ? lineCta(r) : `<div class="cta-block" id="mainCta">
         <p class="cta-head">この続きは<br>LINEで<strong>無料</strong>でお届けします</p>
         <ul class="locked-list">${r.theme.locked.map((l) => `<li>🔒 ${l}</li>`).join('')}</ul>
 
         <ol class="steps">
-          <li><span>1</span>下のボタンからLINEを友だち追加</li>
-          <li><span>2</span>合言葉「<strong>${t.keyword}</strong>」を送る</li>
-          <li><span>3</span>あなた専用の詳しい鑑定がすぐ届きます</li>
+          <li><span>1</span><p>下のボタンからLINEを友だち追加</p></li>
+          <li><span>2</span><p>合言葉「<strong>${t.keyword}</strong>」を送る</p></li>
+          <li><span>3</span><p>あなた専用の詳しい鑑定がすぐ届きます</p></li>
         </ol>
 
         <div class="keyword-box">
@@ -348,7 +387,7 @@
           <p class="gifts-title">🎁 LINE登録でお受け取りいただけるもの</p>
           <ul>${C.gifts.concat(C.giftsByTheme[r.themeKey] || []).map((g) => `<li>${g}</li>`).join('')}</ul>
         </div>
-      </div>
+      </div>`}
 
       <div class="card card-letter">
         <h3 class="card-title">${C.reader.name}からのメッセージ</h3>
@@ -369,18 +408,24 @@
 
       <p class="limit-note">${D.limitNote}</p>
 
-      <a class="btn btn-line" href="${url}" target="_blank" rel="noopener" data-cta="bottom">LINEで続きを受け取る（無料）</a>
+      ${IS_LINE
+        ? `<a class="btn btn-line" href="${url}" data-cta="bottom">この結果をLINEで受け取る</a>`
+        : `<a class="btn btn-line" href="${url}" target="_blank" rel="noopener" data-cta="bottom">LINEで続きを受け取る（無料）</a>`}
       <button type="button" class="btn-text" id="restartBtn">もう一度診断する</button>
       <p class="footer">© ${C.reader.name}</p>
     `;
 
-    $('#copyBtn').addEventListener('click', () => copyKeyword(t.keyword));
+    if ($('#copyBtn')) $('#copyBtn').addEventListener('click', () => copyKeyword(t.keyword));
     $('#restartBtn').addEventListener('click', restart);
     $('#stickyLineBtn').href = url;
+    if (IS_LINE) {
+      $('#stickyLineBtn').textContent = 'この結果をLINEで受け取る';
+      $('#stickyLineBtn').removeAttribute('target');
+    }
     document.querySelectorAll('.btn-line').forEach((a) => {
       a.addEventListener('click', () => {
-        copyKeyword(t.keyword, true);
-        track('line_click', { type: r.typeKey, theme: r.themeKey, position: a.dataset.cta || a.id });
+        if (!IS_LINE) copyKeyword(t.keyword, true);
+        track(IS_LINE ? 'line_send_click' : 'line_click', { type: r.typeKey, theme: r.themeKey, position: a.dataset.cta || a.id });
       });
     });
     setupSticky();
