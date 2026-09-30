@@ -1,368 +1,315 @@
+// ===== 手相診断データ =====
+// 手のイラストは「自分の右手のひらを見たときの向き」（左に小指、右に親指）で描いています。
+
+const HAND_LINES = {
+  kanjoStraight: 'M44,112 Q82,109 120,106',
+  kanjoCurve: 'M44,112 Q88,120 114,86',
+  chinoUp: 'M140,122 Q102,124 66,114',
+  chinoStraight: 'M140,122 Q100,132 56,138',
+  chinoDown: 'M140,122 Q100,134 72,180',
+  seimeiLarge: 'M140,124 Q84,168 116,228',
+  seimeiNormal: 'M140,124 Q104,168 124,228',
+  seimeiSmall: 'M140,124 Q124,168 134,228',
+  unmei: 'M100,226 L103,96',
+  zaiun: 'M56,150 L55,100',
+  masukake: 'M44,122 Q92,114 140,122',
+  shinpi: 'M90,116 L102,134 M104,116 L88,134',
+  haou: 'M92,196 L100,98 M92,196 L76,100 M92,196 L56,104',
+  solomon: 'M116,98 Q128,112 140,100'
+};
+
+// 質問ごとに「背景として薄く描く線」
+const BASE_FAINT = ['kanjoCurve', 'chinoStraight', 'seimeiNormal'];
+
 const PALM_DATA = {
-  steps: [
+  meta: {
+    id: 'palm-talent',
+    title: '手相でわかる<br>あなたの<em>本当の才能</em>と<br><em>金運タイプ</em>診断',
+    lead:
+      '「頑張ってきたのに、なぜか報われない」<br>「これから何をしたらいいのかわからない」<br><br>手のひらには、あなたがまだ気づいていない才能と、これからの人生を豊かにするヒントが刻まれています。',
+    badges: ['全8問', '約2分', '無料'],
+    handTip: '右手のひらを見ながら答えてください'
+  },
+
+  questions: [
     {
-      id: 'overall',
-      title: '手の全体印象',
-      description: '手のひら全体を見て、全体的な印象を教えてください。',
-      questions: [
-        {
-          id: 'lineCount',
-          label: '線の多さ',
-          helpText: '4大基本線（知能線・感情線・生命線・運命線）以外の細かい線がどれくらいありますか？',
-          type: 'radio',
-          image: 'images/lineCount.png',
-          options: [
-            { value: 'few', label: '① 少ない', description: '基本線以外ほとんどない' },
-            { value: 'normal', label: '② 普通', description: '基本線の他にいくつか線がある' },
-            { value: 'many', label: '③ 多い・複雑', description: '細かい線がたくさん走っている' }
-          ]
-        },
-        {
-          id: 'leftRight',
-          label: '左右の手相の類似度',
-          helpText: '左手と右手の主要な線（知能線・感情線）の形を比べてみてください。',
-          type: 'radio',
-          image: 'images/leftRight.png',
-          options: [
-            { value: 'similar', label: '① 似ている', description: '左右でほぼ同じ形をしている' },
-            { value: 'different', label: '② 異なる', description: '左右で形がかなり違う' }
-          ]
-        }
+      id: 'theme',
+      label: 'いま、いちばん気になることは？',
+      help: 'あなたに合わせて鑑定の内容を変えます',
+      type: 'single',
+      layout: 'list',
+      options: [
+        { value: 'work', label: '仕事・これからの働き方' },
+        { value: 'money', label: 'お金・老後の暮らし' },
+        { value: 'self', label: '自分の才能・向いていること' },
+        { value: 'relation', label: '人間関係・家族のこと' }
       ]
     },
     {
-      id: 'chinoLine',
-      title: '知能線（頭脳線）',
-      description: '人差し指と親指の付け根の間から出発し、手のひらを横切る線です。性格・才能・興味がわかります。',
-      questions: [
-        {
-          id: 'chinoLength',
-          label: '線の長さ',
-          helpText: '薬指の延長線と比べてどうですか？',
-          type: 'radio',
-          image: 'images/chinoLength.png',
-          options: [
-            { value: 'short', label: '① 短い', description: '薬指のラインに届かない' },
-            { value: 'normal', label: '② 普通', description: '薬指のラインくらいまで届く' },
-            { value: 'long', label: '③ 長い', description: '薬指のラインを超えている' }
-          ]
-        },
-        {
-          id: 'chinoStart',
-          label: '始点の位置',
-          helpText: '人差し指と親指の付け根の間のどの位置から線が出ていますか？',
-          type: 'radio',
-          image: 'images/chinoStart.png',
-          options: [
-            { value: 'upper', label: '① 上（人差し指寄り）', description: '木星丘寄りから出ている' },
-            { value: 'middle', label: '② 真ん中', description: '人差し指と親指のちょうど中間' },
-            { value: 'lower', label: '③ 下（親指寄り）', description: '第1火星丘寄りから出ている' }
-          ]
-        },
-        {
-          id: 'chinoEnd',
-          label: '終点の位置',
-          helpText: '線の先端はどの方向に向かっていますか？',
-          type: 'radio',
-          image: 'images/chinoEnd.png',
-          options: [
-            { value: 'upper', label: '① 上向き（小指方向）', description: '水星丘の方向に向かっている' },
-            { value: 'middle', label: '② 真ん中', description: '第2火星丘あたりで終わっている' },
-            { value: 'lower', label: '③ 下向き（手首方向）', description: '月丘の方向に向かっている' }
-          ]
-        },
-        {
-          id: 'chinoSpecial',
-          label: '特殊な形状',
-          helpText: '知能線に特徴的な形はありますか？該当するものを全て選んでください。',
-          type: 'checkbox',
-          image: 'images/chinoSpecial.png',
-          options: [
-            { value: 'none', label: '① なし（通常の1本線）', description: '該当するものがない場合に選択' },
-            { value: 'fork', label: '② 先端が二股に分かれている', description: '' },
-            { value: 'double', label: '③ 知能線が2本ある（二重知能線）', description: '' },
-            { value: 'masukake', label: '④ マスカケ線（感情線と一体化）', description: '手のひらを横一直線に横切る線' }
-          ]
-        }
+      id: 'kanjo',
+      label: '小指の下から伸びる「感情線」は、どちらに近い？',
+      help: '手のひらのいちばん上を横に走る線です',
+      type: 'single',
+      layout: 'image',
+      options: [
+        { value: 'straight', label: 'まっすぐ', hand: { hi: ['kanjoStraight'], faint: ['chinoStraight', 'seimeiNormal'] } },
+        { value: 'curve', label: '上にカーブ', hand: { hi: ['kanjoCurve'], faint: ['chinoStraight', 'seimeiNormal'] } }
+      ],
+      unknown: true
+    },
+    {
+      id: 'chino',
+      label: '親指と人差し指の間から伸びる「頭脳線」の先は？',
+      help: '手のひらの真ん中あたりを横に走る線です',
+      type: 'single',
+      layout: 'image',
+      options: [
+        { value: 'up', label: '上向き', hand: { hi: ['chinoUp'], faint: ['kanjoCurve', 'seimeiNormal'] } },
+        { value: 'straight', label: 'まっすぐ', hand: { hi: ['chinoStraight'], faint: ['kanjoCurve', 'seimeiNormal'] } },
+        { value: 'down', label: '下向き', hand: { hi: ['chinoDown'], faint: ['kanjoCurve', 'seimeiNormal'] } }
+      ],
+      unknown: true
+    },
+    {
+      id: 'seimei',
+      label: '親指のつけ根を囲む「生命線」のふくらみは？',
+      help: '手のひらの中央に向かってどれくらい張り出しているか',
+      type: 'single',
+      layout: 'image',
+      options: [
+        { value: 'large', label: '大きい', hand: { hi: ['seimeiLarge'], faint: ['kanjoCurve', 'chinoStraight'] } },
+        { value: 'normal', label: 'ふつう', hand: { hi: ['seimeiNormal'], faint: ['kanjoCurve', 'chinoStraight'] } },
+        { value: 'small', label: '小さい', hand: { hi: ['seimeiSmall'], faint: ['kanjoCurve', 'chinoStraight'] } }
+      ],
+      unknown: true
+    },
+    {
+      id: 'unmei',
+      label: '手首から中指に向かって縦に伸びる「運命線」は？',
+      type: 'single',
+      layout: 'image',
+      options: [
+        { value: 'clear', label: 'はっきりある', hand: { hi: ['unmei'], faint: BASE_FAINT } },
+        { value: 'faint', label: '薄い・途切れている', hand: { hiDashed: ['unmei'], faint: BASE_FAINT } },
+        { value: 'none', label: '見当たらない', hand: { faint: BASE_FAINT } }
       ]
     },
     {
-      id: 'kanjoLine',
-      title: '感情線',
-      description: '小指の下あたりから出発し、人差し指方向に伸びる線です。愛情のタイプ・感受性がわかります。',
-      questions: [
-        {
-          id: 'kanjoCurve',
-          label: '線のカーブ',
-          helpText: '感情線の形状はどちらに近いですか？',
-          type: 'radio',
-          image: 'images/kanjoCurve.png',
-          options: [
-            { value: 'straight', label: '① 直線的', description: 'まっすぐに近い形' },
-            { value: 'curved', label: '② 曲線的', description: 'カーブを描いている' }
-          ]
-        },
-        {
-          id: 'kanjoHorizontal',
-          label: '横の長さ',
-          helpText: '線の先端はどこまで届いていますか？',
-          type: 'radio',
-          image: 'images/kanjoVertical.png',
-          options: [
-            { value: 'short', label: '① 短い', description: '中指の下あたりまで' },
-            { value: 'normal', label: '② 標準', description: '中指と人差し指の間まで' },
-            { value: 'long', label: '③ 長い', description: '人差し指の下やそれ以上' }
-          ]
-        },
-        {
-          id: 'kanjoVertical',
-          label: '縦の長さ（指との距離）',
-          helpText: '感情線と指の付け根との距離はどうですか？',
-          type: 'radio',
-          image: 'images/kanjoHorizontal.png',
-          options: [
-            { value: 'short', label: '① 短い（指と離れている）', description: '指の付け根から離れた位置' },
-            { value: 'normal', label: '② 標準', description: '一般的な距離感' },
-            { value: 'long', label: '③ 長い（指に近い）', description: '指の付け根に近い位置' }
-          ]
-        },
-        {
-          id: 'kanjoSpecial',
-          label: '特殊な形状',
-          helpText: '感情線に特徴的な形はありますか？該当するものを全て選んでください。',
-          type: 'checkbox',
-          image: 'images/kanjoSpecial.png',
-          options: [
-            { value: 'none', label: '① なし（通常）', description: '該当するものがない場合に選択' },
-            { value: 'branchUp', label: '② 上向きの枝線がある', description: '' },
-            { value: 'branchDown', label: '③ 下向きの枝線がある', description: '' },
-            { value: 'double', label: '④ 感情線が2本ある（二重感情線）', description: '' }
-          ]
-        }
+      id: 'zaiun',
+      label: '小指の下に、縦の短い線（財運線）はある？',
+      help: 'お金との縁をあらわす線です',
+      type: 'single',
+      layout: 'image',
+      options: [
+        { value: 'clear', label: 'はっきりある', hand: { hi: ['zaiun'], faint: BASE_FAINT } },
+        { value: 'faint', label: '薄い・短い', hand: { hiDashed: ['zaiun'], faint: BASE_FAINT } },
+        { value: 'none', label: '見当たらない', hand: { faint: BASE_FAINT } }
       ]
     },
     {
-      id: 'unmeiLine',
-      title: '運命線',
-      description: '手首付近から中指に向かって縦に伸びる線です。人生の転機・仕事運・価値観がわかります。',
-      questions: [
-        {
-          id: 'unmeiExist',
-          label: '線の有無',
-          helpText: '運命線ははっきり見えますか？',
-          type: 'radio',
-          image: 'images/unmeiExist.png',
-          options: [
-            { value: 'clear', label: '① はっきりある', description: '濃くしっかり見える' },
-            { value: 'faint', label: '② ない・薄い', description: '見えない、またはかなり薄い' }
-          ]
-        },
-      ]
+      id: 'rare',
+      label: 'めずらしい「レア線」はありますか？',
+      help: 'あてはまるものをすべて選んでください',
+      type: 'multi',
+      layout: 'image',
+      options: [
+        { value: 'masukake', label: 'マスカケ線', sub: '横一直線の線', hand: { hi: ['masukake'], faint: ['seimeiNormal'] } },
+        { value: 'shinpi', label: '神秘十字線', sub: '2本の線の間の十字', hand: { hi: ['shinpi'], faint: BASE_FAINT } },
+        { value: 'haou', label: '覇王線', sub: '下から3本に分かれる線', hand: { hi: ['haou'], faint: BASE_FAINT } },
+        { value: 'solomon', label: 'ソロモンの環', sub: '人差し指の下の弧', hand: { hi: ['solomon'], faint: BASE_FAINT } }
+      ],
+      noneLabel: 'どれもない・わからない'
     },
     {
-      id: 'seimeiLine',
-      title: '生命線',
-      description: '人差し指と親指の間から出発し、親指の付け根を囲むように弧を描く線です。健康・寿命・生命力がわかります。',
-      questions: [
-        {
-          id: 'seimeiThickness',
-          label: '線の太さ・濃さ',
-          helpText: '線の太さはどうですか？',
-          type: 'radio',
-          image: 'images/seimeiThickness.png',
-          options: [
-            { value: 'thick', label: '① 太い（濃い）', description: 'はっきりと太く見える' },
-            { value: 'thin', label: '② 薄い', description: '細めで薄い' }
-          ]
-        },
-        {
-          id: 'seimieBulge',
-          label: '張り出し（カーブの大きさ）',
-          helpText: '中指の延長線と比べて、弧はどれくらい張り出していますか？',
-          type: 'radio',
-          image: 'images/seimieBulge.png',
-          options: [
-            { value: 'large', label: '① 大きい', description: '中指のラインを超えて張り出している' },
-            { value: 'normal', label: '② 普通', description: '中指のラインちょうどくらい' },
-            { value: 'small', label: '③ 小さい', description: '中指のラインに届かない' }
-          ]
-        },
-        {
-          id: 'seimeiEnd',
-          label: '終点の位置',
-          helpText: '線の先端はどちらに向かっていますか？',
-          type: 'radio',
-          image: 'images/seimeiEnd.png',
-          options: [
-            { value: 'venus', label: '① 内側（金星丘より）', description: '親指の付け根側に収まっている' },
-            { value: 'earth', label: '② 真下（地丘方面）', description: '手のひら中央下部に向かっている' },
-            { value: 'moon', label: '③ 外側（月丘より）', description: '小指側に流れている' }
-          ]
-        }
+      id: 'mood',
+      label: 'いまの気持ちに、いちばん近いのは？',
+      type: 'single',
+      layout: 'list',
+      options: [
+        { value: 'change', label: '何かを変えたい、始めたい' },
+        { value: 'lost', label: 'どうしたらいいか迷っている' },
+        { value: 'tired', label: '少し疲れている、休みたい' },
+        { value: 'positive', label: 'これからが楽しみ' }
       ]
     }
   ],
 
-  interpretations: {
-    overall: {
-      lineCount: {
-        few: { text: 'メンタルが安定していて、おおらかな性格です。細かいことは気にしないタイプ。' },
-        normal: { text: 'バランスの取れた性格の持ち主です。' },
-        many: { text: '感受性がとても高く、繊細な方です。人の気持ちに敏感で、細かいことにも気づける反面、メンタルが不安定になりやすい一面もあります。' }
-      },
-      leftRight: {
-        similar: { text: '感情が表情に出やすく、素直で裏表のない性格です。人のことを信じやすく、周りから信頼される存在です。' },
-        different: { text: '状況に応じて臨機応変に対応できるタイプです。自分の短所を変える努力ができ、表面と内面を使い分ける力を持っています。' }
+  // 「よくわからない」を選んだときの判定
+  fallback: { kanjo: 'curve', chino: 'straight', seimei: 'normal' },
+
+  // 感情線 × 頭脳線 で 6タイプ
+  typeMap: {
+    'straight-up': 'michibiki',
+    'straight-straight': 'takumi',
+    'straight-down': 'hirameki',
+    'curve-up': 'tsunagu',
+    'curve-straight': 'sasae',
+    'curve-down': 'iyashi'
+  },
+
+  types: {
+    michibiki: {
+      kanji: '導',
+      name: '道をひらく参謀タイプ',
+      catch: '冷静な判断力で、人と物事を動かす人',
+      keyword: 'みちびき',
+      strengths: ['判断力', '段取り力', '交渉力'],
+      core:
+        'あなたは、感情に流されず物事を冷静に見極められる人。上向きの頭脳線は、現実を動かす力と「お金を生み出すセンス」のあらわれです。職場でも家庭でも、気づけば段取りや問題解決を任されてきたのではないでしょうか。\nただ、その頼もしさゆえに「あの人なら大丈夫」と思われ、弱音を吐けずに一人で抱え込んできたことも多かったはず。あなたが報われにくかったのは、力が足りないからではありません。その力を“人のため”だけに使ってきたからです。',
+      hints: {
+        work: 'あなたの判断力と段取り力は、組織の中よりも「自分で決められる立場」でこそ本領を発揮します。これまで裏方として磨いてきた経験は、そのまま次のステージの武器になります。',
+        money: 'あなたは本来、お金の流れを読む力を持っている人。これまでは家族や周りのために使ってきたその力を、自分の暮らしのために向けたとき、金運は大きく変わり始めます。',
+        self: 'あなたの才能は「全体を見渡して、最善の道を選べること」。周りから当たり前に頼られてきたことこそ、あなたが持って生まれた才能です。',
+        relation: 'しっかり者のあなたは、つい相手の分まで背負ってしまいがち。人間関係が苦しくなるのは、あなたが冷たいからではなく、責任感が強すぎるからです。'
       }
     },
-
-    chinoLine: {
-      chinoLength: {
-        short: {
-          personality: '行動力に優れ、考える前にまず動けるタイプです。',
-          talent: 'スピード感のある判断と実行力が強みです。'
-        },
-        normal: {
-          personality: '考えることと行動のバランスが良いタイプです。',
-          talent: '状況に応じて柔軟に対応できる力があります。'
-        },
-        long: {
-          personality: '考えることが好きで、行動する前によく熟考するタイプです。',
-          talent: '深い思考力と分析力が強みです。じっくり考えて本質を見抜く力があります。'
-        }
-      },
-      chinoStart: {
-        upper: {
-          personality: '大胆で積極的、常識にとらわれない独立心の強いタイプです。',
-          talent: 'リーダーシップやクリエイティブな才能があります。周りを気にせず突き進む力を持っています。',
-          work: '起業家、クリエイター、リーダー職に向いています。'
-        },
-        middle: {
-          personality: 'バランスの良い性格の持ち主です。',
-          talent: '協調性と自主性を兼ね備えています。',
-          work: '幅広い職種に適性があります。'
-        },
-        lower: {
-          personality: '控えめで慎重、ルールや秩序を大切にするタイプです。',
-          talent: '丁寧さと正確性に優れ、誰かのもとで指示を受けて動く方が安心して力を発揮できます。',
-          work: 'サポート職、事務職、ルールに基づく業務に向いています。'
-        }
-      },
-      chinoEnd: {
-        upper: {
-          personality: '現実主義で合理的に判断できるタイプです。',
-          talent: 'コミュニケーション能力と商才に長けています。話術が巧みで、自分に有利に話を進められる力があります。',
-          work: '起業家、営業職、外交官などが向いています。',
-          money: 'お金に対して合理的で、稼ぐ力があります。'
-        },
-        middle: {
-          personality: '冷静で合理的に判断でき、バランスの取れた思考の持ち主です。',
-          talent: '忍耐力と自制心が強く、コツコツ積み上げる力があります。感情に左右されず冷静に物事を処理できます。',
-          work: '士業、エンジニア、研究職などが向いています。',
-          money: 'お金の管理が上手で、堅実に蓄えるタイプです。'
-        },
-        lower: {
-          personality: 'ロマンチストで感性が豊かなタイプです。',
-          talent: '芸術的才能と表現力に優れています。独特の世界観を持ち、周りから応援される運を持っています。',
-          work: 'デザイナー、アーティスト、クリエイティブ職が向いています。',
-          money: '感性に基づいた判断をするため、気分でお金を使うことも。'
-        }
-      },
-      chinoSpecial: {
-        none: { text: '' },
-        fork: { text: '先端が二股に分かれた知能線は、複数の才能を持つ証です。何でも卒なくこなせる器用さがある一方、「器用貧乏」にならないよう、一つのことに集中する期間を意識的に設けると良いでしょう。' },
-        double: { text: '二重知能線の持ち主です！脳が2つあるようなイメージで、ずば抜けて頭が良い方です。先見の明があり、周りからは理解されにくいこともありますが、それは才能の証です。' },
-        masukake: { text: 'マスカケ線（天下取りの線）の持ち主です！最終的に大きな成果や成功を収める素質を持っています。波乱万丈な人生となりやすいですが、困難を乗り越えた先に望むものを手に入れることができます。普通の枠におさまらず、信念を持って我が道を突き進むことが大切です。' }
+    takumi: {
+      kanji: '匠',
+      name: '信頼を積み上げる職人タイプ',
+      catch: 'コツコツ続ける力で、確かなものを築く人',
+      keyword: 'たくみ',
+      strengths: ['継続力', '誠実さ', '専門性'],
+      core:
+        '誠実で責任感が強く、一度引き受けたことは最後までやり遂げる人。まっすぐ伸びた頭脳線は、冷静さと粘り強さの証です。周りからの信頼は、あなたが思っている以上に厚いはずです。\nけれど「きちんとしなきゃ」「迷惑をかけてはいけない」と自分に厳しく、楽しむことや休むことを後回しにしてきませんでしたか。あなたが積み上げてきた経験は、これからの人生で“形”に変えられる大切な財産です。',
+      hints: {
+        work: 'あなたの強みは、長く続けてきたことの中にあります。「こんなこと誰でもできる」と思っていることが、実は人から求められる専門性になるタイプです。',
+        money: 'あなたは本来、堅実にお金を育てられる人。ただ、真面目さゆえに「自分のためにお金を使うこと」に罪悪感を持ちやすく、それが金運の流れを止めていることも。',
+        self: 'あなたの才能は「信頼を積み重ねる力」。派手さはなくても、あなたにしかできない丁寧な仕事が、これからの人生を支える柱になります。',
+        relation: '誠実なあなたは、相手にも同じ誠実さを求めてしまい、傷つくことがあったかもしれません。それはあなたが真剣に人と向き合ってきた証です。'
       }
     },
-
-    kanjoLine: {
-      kanjoCurve: {
-        straight: {
-          personality: '感情表現がストレートで、感情の振れ幅が小さくクールで冷静なタイプです。',
-          love: '論理的に物事を判断でき、感情に左右されにくい安定感があります。',
-          work: '仕事を仕事と割り切れ、苦手なことも淡々とこなせます。感情に左右されず一定のパフォーマンスを保てます。',
-          advice: '小さな感情表現を言葉にして伝える・リアクションを少し大きくすることを心がけると、人間関係がさらに良くなります。'
-        },
-        curved: {
-          personality: '感情表現が優しく、喜怒哀楽がはっきりしているタイプです。共感力が高く、人の気持ちを察する力があります。',
-          love: '感情が豊かで、場の雰囲気を明るくするムードメーカー気質を持っています。',
-          work: '人の気持ちを理解する力が強い一方、嫌いなことは頑張りにくい面もあります。感情を仕事に持ち込みやすい傾向があります。',
-          advice: '感情のアップダウンが出やすいので、自分の感情を整える小さなルーティンを持つと良いでしょう。'
-        }
-      },
-      kanjoHorizontal: {
-        short: {
-          text: '感情面では冷静で淡白、サバサバした性格です。落ち着いた対応ができる人です。',
-          love: '恋愛では冷静な判断ができますが、やや淡白に見られることも。'
-        },
-        normal: {
-          text: '愛情のバランスが良いタイプです。',
-          love: '愛情深さと冷静さのバランスが取れています。'
-        },
-        long: {
-          text: '愛情深く、相手に尽くすタイプです。好きな人に対しては心を開いて愛を注ぎます。',
-          love: '独占欲や嫉妬心が強くなることもありますが、それは愛情の深さの裏返しです。'
-        }
-      },
-      kanjoVertical: {
-        short: {
-          text: '恋愛に対しては受け身で消極的、シャイで控えめなタイプです。',
-          love: '自分からアプローチするのが苦手ですが、慎重な分、信頼できる相手を選べます。'
-        },
-        normal: {
-          text: '積極性と慎重さのバランスが取れています。',
-          love: '適度な距離感で人と接することができます。'
-        },
-        long: {
-          text: '積極的で感情表現が豊かなタイプです。自らアクションを起こせる行動力があります。',
-          love: '恋愛でも自分から積極的に動けるタイプです。'
-        }
-      },
-      kanjoSpecial: {
-        none: { text: '' },
-        branchUp: { text: '上向きの枝線があり、ポジティブで積極的な恋愛観を持っています。' },
-        branchDown: { text: '下向きの枝線があり、繊細で傷つきやすい面を持っています。過去の経験から慎重になっている可能性がありますが、それは自分を守る力でもあります。' },
-        double: { text: '二重感情線の持ち主です！愛情が非常に深く、仕事と家庭を両立できるエネルギーを持っています。人の倍以上の愛情を注げる稀有な存在です。' }
+    hirameki: {
+      kanji: '創',
+      name: '静かに光る表現者タイプ',
+      catch: '落ち着いた佇まいの奥に、豊かな感性を秘めた人',
+      keyword: 'ひらめき',
+      strengths: ['感性', '直感力', '美意識'],
+      core:
+        '外ではしっかり者に見られるのに、内側には豊かな想像力と美意識を持っている人。下向きの頭脳線は、芸術性や直感力のあらわれです。\n本当は「好きなこと」「美しいもの」に触れているときがいちばんあなたらしいのに、現実的な役割を優先して、その感性を封印してきたかもしれません。その才能は、人生経験を重ねた今だからこそ活かせるものです。',
+      hints: {
+        work: 'あなたは「好き」と「得意」が重なったとき、驚くほど力を発揮するタイプ。これまで趣味だと思っていたことの中に、次の仕事のタネが隠れています。',
+        money: 'あなたの金運は、感性を活かしたときに開くタイプ。我慢してお金を守るよりも、心が動くことにお金と時間を使ったときに、流れが良くなります。',
+        self: 'あなたの才能は「目に見えないものを感じ取り、形にする力」。ずっと心の奥にしまってきた「本当はやってみたかったこと」が、あなたの才能の入り口です。',
+        relation: '感受性が豊かなあなたは、人の言葉や態度を深く受け止めてしまいがち。一人の時間が必要なのは、わがままではなく、あなたの才能を守るためです。'
       }
     },
-
-    unmeiLine: {
-      unmeiExist: {
-        clear: {
-          text: '運命線がはっきりある方は、リーダータイプです。目標やビジョンを明確に持ち、自分の力で道を切り開く力があります。目標実現のためなら嫌なことでも努力でき、周りを巻き込む力も持っています。',
-          work: '自己実現ができるタイプで、仕事運も強いです。'
-        },
-        faint: {
-          text: '運命線が薄い・ないタイプはサポートタイプです。これは「運がない」という意味ではなく、周りのサポート役が向いているということ。好きなことなら頑張れるタイプで、趣味の延長のような感覚で仕事をすると力を発揮できます。',
-          work: '人をサポートする仕事や、自分の好きなことを仕事にすると輝けます。'
-        }
-      },
+    tsunagu: {
+      kanji: '繋',
+      name: 'ご縁をつなぐ橋渡しタイプ',
+      catch: '人の気持ちがわかり、人と人を結びつける人',
+      keyword: 'つなぐ',
+      strengths: ['共感力', '会話力', '人脈'],
+      core:
+        '人の気持ちを察する優しさと、現実的に物事を進める賢さをあわせ持つ人。上にカーブした感情線は愛情深さ、上向きの頭脳線はコミュニケーション力と商才のあらわれです。あなたの周りには自然と人が集まり、相談されることも多いはず。\n一方で、相手に合わせすぎて自分の本音を飲み込み、人間関係で疲れてしまうことも。あなたの“人をつなぐ力”は、実はお金を生み出す才能でもあります。',
+      hints: {
+        work: 'あなたは「人」が関わる場所でこそ輝くタイプ。人の話を聴く力、人と人を引き合わせる力は、年齢を重ねるほど価値が高まる才能です。',
+        money: 'あなたの金運は「ご縁」から運ばれてきます。人に与えてばかりだったこれまでと、受け取ることを自分に許したこれからでは、お金の巡りが大きく変わります。',
+        self: 'あなたの才能は「人の心を開き、つなげる力」。あなたと話すと元気になる人がいるのは、偶然ではありません。',
+        relation: '人の気持ちがわかるあなたは、頼まれると断れず、いつの間にか疲れてしまいがち。本当に大切にすべき人間関係は、実は手相にもあらわれています。'
+      }
     },
-
-    seimeiLine: {
-      seimeiThickness: {
-        thick: { text: '生命力が強く、体力だけでなく気力もある方です。性格も明るく積極的。ただし、無理をしがちな面もあるので、たまにはしっかり休むことも大切です。' },
-        thin: { text: '繊細で人を思いやれる優しさを持つ方です。体力・気力は控えめな傾向にありますが、無理をせず自分のペースを大切にすることで、充実した毎日を過ごせます。' }
-      },
-      seimieBulge: {
-        large: { text: '生命力が非常に強く、根性と自信を兼ね備えています。困難な状況でも乗り越える力があります。' },
-        normal: { text: '生命力は程よくバランスが取れています。無理のしすぎも控えめすぎもなく、持続力を持って行動できるタイプです。' },
-        small: { text: '体力は控えめですが、その分無理をしない賢い生き方ができます。自分のペースを大切にしましょう。' }
-      },
-      seimeiEnd: {
-        venus: { text: '身内や地元とのつながりが深く、家庭的な方です。安心できる環境の中で力を発揮するタイプです。' },
-        earth: { text: '真下に向かう生命線は、地に足のついた堅実な生き方を好むタイプです。地丘方面への流れは、安定と継続を重視する傾向を示します。' },
-        moon: { text: '地元を離れて活躍できるタイプです。海外との縁が強い方もいます。感性や芸術性を活かすと良い方向に進みます。アクティブで、家でじっとしているより外に出た方が運が開けます。' }
+    sasae: {
+      kanji: '支',
+      name: 'みんなを支える包容力タイプ',
+      catch: '深い愛情と責任感で、周りを支え続けてきた人',
+      keyword: 'ささえ',
+      strengths: ['包容力', '責任感', '面倒見のよさ'],
+      core:
+        '家族や職場の人のために、自分のことは後回しにして頑張ってきた人。上にカーブした感情線は深い愛情と思いやり、まっすぐな頭脳線は責任感と現実的な判断力のあらわれです。\n「私がやらなきゃ」と踏ん張ってきたあなたの人生は、決して無駄ではありません。ただ、人を支えることに一生懸命なあまり、「自分は本当は何がしたいのか」がわからなくなっていませんか。これからは、その力を自分のために使う番です。',
+      hints: {
+        work: 'あなたの「人を支える力」は、どんな職場でも頼りにされる一方で、あなた自身をすり減らしやすい使い方をされてきました。同じ力でも、使う場所を変えるだけで報われ方がまったく変わるタイプです。',
+        money: 'あなたは、自分のためにお金を使うことが苦手な人。家族のためには惜しまないのに、自分には我慢ばかり。実は、その「自分を後回しにするクセ」が金運の流れを止めています。',
+        self: 'あなたの才能は「人の成長や回復を支える力」。これまで家族や職場で当たり前にやってきたことは、誰にでもできることではありません。',
+        relation: '優しいあなたは、相手の期待に応えようとして自分を犠牲にしがち。人間関係で疲れてしまうのは、あなたの愛情が深すぎるからです。'
+      }
+    },
+    iyashi: {
+      kanji: '癒',
+      name: '心を癒す感性のヒーラータイプ',
+      catch: '繊細な感受性で、人の痛みに寄り添える人',
+      keyword: 'いやし',
+      strengths: ['感受性', '直感力', '癒しの力'],
+      core:
+        '人の痛みや場の空気を敏感に感じ取れる、とても優しい人。上にカーブした感情線と下向きの頭脳線は、豊かな感受性と直感力、そして癒しの才能のあらわれです。\nその繊細さゆえに、人間関係で傷ついたり、周りに合わせて疲れ果ててしまった経験もあるかもしれません。でも、つらい経験をしてきたあなただからこそ、人の心に寄り添える。あなたの人生の出来事には、ちゃんと意味があります。',
+      hints: {
+        work: 'あなたは、競争や効率ばかりの環境では力を出しにくいタイプ。人の心に寄り添う場所、安心できる場所にいるとき、才能が大きく花開きます。',
+        money: 'あなたの金運は、心が満たされているときに巡ってくるタイプ。不安からお金を握りしめるほど流れが滞り、自分を大切にし始めたときに動き出します。',
+        self: 'あなたの才能は「人の心を癒す力」。つらい経験を乗り越えてきたあなたの言葉には、同じように悩む人を救う力があります。',
+        relation: '感受性の強いあなたは、人の感情を自分のことのように受け取ってしまいます。疲れやすいのは弱さではなく、あなたの優しさの裏返しです。'
       }
     }
   },
 
-  resultCategories: [
-    { id: 'personality', title: '性格・才能タイプ', icon: '✨' },
-    { id: 'work', title: '仕事運', icon: '💼' },
-    { id: 'love', title: '恋愛', icon: '💕' },
-    { id: 'health', title: '健康・生命力', icon: '🌿' },
-    { id: 'advice', title: '総合アドバイス', icon: '💬' }
-  ]
+  themes: {
+    work: {
+      label: '仕事・これからの働き方',
+      cliff: 'そして、あなたの右手には、これから仕事の流れが大きく変わる“ある時期”のサインも出ています。それは――',
+      locked: ['あなたがいちばん輝ける働き方と仕事', '50代・60代からでも活かせる才能の使い方', '仕事運が動き出す時期', '今の職場で消耗しないためのコツ']
+    },
+    money: {
+      label: 'お金・老後の暮らし',
+      cliff: 'さらに、あなたの右手には、これから金運が動き出す“きっかけ”を示すサインも出ています。それは――',
+      locked: ['あなたの金運タイプの詳しい特徴', 'お金が貯まる人・逃げる人の分かれ道', '金運が上がり始める時期', '年金＋αの豊かさをつくるヒント']
+    },
+    self: {
+      label: '自分の才能・向いていること',
+      cliff: '実は、あなたの手相には、まだ使われていない“もう一つの才能”も眠っています。それは――',
+      locked: ['まだ使っていない、もう一つの才能', 'あなたが報われにくかった本当の理由', '第二の人生で大切にすべきこと', '運命を好転させる開運アクション']
+    },
+    relation: {
+      label: '人間関係・家族のこと',
+      cliff: 'そして、あなたの手相には、人間関係が楽になる“ある転機”のサインも出ています。それは――',
+      locked: ['人間関係で疲れやすい本当の理由', '距離を置くべき人・大切にすべき人', '家族との関係を楽にするヒント', 'ご縁が広がる時期']
+    }
+  },
+
+  // 右手に出ているサイン（結果ページの根拠表示）
+  signs: {
+    kanjo: {
+      straight: { title: 'まっすぐな感情線', text: '感情に流されず、冷静に物事を見られる' },
+      curve: { title: '上にカーブした感情線', text: '愛情深く、人の気持ちに寄り添える' }
+    },
+    chino: {
+      up: { title: '上向きの頭脳線', text: '現実を動かす力と、お金を生み出すセンス' },
+      straight: { title: 'まっすぐな頭脳線', text: '責任感が強く、堅実に積み上げられる' },
+      down: { title: '下向きの頭脳線', text: '豊かな感性と直感力' }
+    },
+    seimei: {
+      large: { title: '大きく張り出した生命線', text: 'まだまだ新しいことに挑戦できるエネルギー' },
+      normal: { title: 'バランスのよい生命線', text: '無理なく長く続けられる持続力' },
+      small: { title: '控えめな生命線', text: '自分のペースを大切にすると運が開く' }
+    },
+    unmei: {
+      clear: { title: 'はっきりした運命線', text: '自分の力で道を切りひらける' },
+      faint: { title: '薄い・途切れた運命線', text: '人生の途中で、生き方を変えられる柔軟さ' },
+      none: { title: '運命線が見えない', text: '決まった道にしばられず、自由に生き方を選べる' }
+    }
+  },
+
+  moneyTypes: {
+    clear: { name: '実りの金運', text: '積み重ねてきたことが、お金として実を結びやすい手相です。' },
+    faint: { name: '芽吹きの金運', text: '金運はこれから育っていくタイミング。動き方しだいで大きく伸びます。' },
+    none: { name: '巡りの金運', text: '人とのご縁を通して、お金が巡ってくるタイプです。' }
+  },
+
+  rare: {
+    masukake: { name: 'マスカケ線', text: '「天下取りの線」。困難を乗り越えて、大きな成果をつかむ力の持ち主です。' },
+    shinpi: { name: '神秘十字線', text: '直感力が鋭く、目に見えない力に守られている人にあらわれる線です。' },
+    haou: { name: '覇王線', text: '金運・成功運をあらわす、最強クラスの線のひとつです。' },
+    solomon: { name: 'ソロモンの環', text: '人を導き、教える才能。先生や指導者の素質をあらわします。' }
+  },
+
+  moodMessages: {
+    change: '「何かを変えたい」という気持ちが芽生えている今は、まさに運命が動き始めるタイミングです。',
+    lost: '迷っているのは、あなたが本気で自分の人生と向き合おうとしている証拠です。',
+    tired: 'これまで本当によく頑張ってきましたね。まずは、そんなご自分を認めてあげてください。',
+    positive: '前向きな今のあなたは、運を引き寄せやすい状態にあります。'
+  },
+
+  closingMessage:
+    '手相は、生き方しだいで変わっていきます。これまで誰かのために使ってきたその力を、これからは、あなた自身の人生のために。',
+
+  // 無料診断と本鑑定の違い（フロント商品への橋渡し）
+  limitNote:
+    'この無料診断は、右手の主な線だけで見る簡易版です。本鑑定では両手・手の形・細かな線に加え、生年月日の占術も組み合わせて、あなたの人生をより立体的に読み解きます。'
 };
