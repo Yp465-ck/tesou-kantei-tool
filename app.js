@@ -12,24 +12,13 @@
     if (Array.isArray(window.dataLayer)) window.dataLayer.push(Object.assign({ event }, payload));
   }
 
-  // ===== 手のイラスト =====
-  const HAND_OUTLINE =
-    'M62,230 C50,205 42,178 42,150 L42,98 L42,80 C42,67 60,67 60,80 L62,96 ' +
-    'L65,52 C65,37 87,37 87,52 L89,92 L92,40 C92,25 114,25 114,40 L114,92 ' +
-    'L117,54 C117,40 139,40 139,54 L140,112 C150,118 170,127 184,137 ' +
-    'C195,146 190,161 179,158 C168,154 160,150 152,152 C150,180 146,205 140,230 Z';
-
-  function handSvg(spec) {
-    const faint = (spec.faint || []).map((k) => `<path d="${HAND_LINES[k]}" class="ln-faint"/>`).join('');
-    const hi = (spec.hi || []).map((k) => `<path d="${HAND_LINES[k]}" class="ln-hi"/>`).join('');
-    const hiDashed = (spec.hiDashed || []).map((k) => `<path d="${HAND_LINES[k]}" class="ln-hi ln-dashed"/>`).join('');
-    return `<svg viewBox="30 18 170 218" class="hand" aria-hidden="true">
-      <path d="${HAND_OUTLINE}" class="hand-shape"/>${faint}${hiDashed}${hi}</svg>`;
-  }
-
   // ===== スタート画面 =====
   function renderStart() {
+    HAND.mount();
+    $('#startEyebrow').textContent = D.meta.eyebrow;
     $('#startTitle').innerHTML = D.meta.title;
+    $('#startSubtitle').textContent = D.meta.subtitle;
+    $('#startHand').innerHTML = HAND.svg({ gold: ['kanjoCurve', 'chinoStraight', 'seimeiNormal', 'unmei'], faint: [] });
     $('#startLead').innerHTML = D.meta.lead;
     $('#handTip').textContent = D.meta.handTip;
     $('#startBadges').innerHTML = D.meta.badges.map((b) => `<li>${b}</li>`).join('');
@@ -78,13 +67,13 @@
       btn.className = 'opt' + (isSelected(opt.value) ? ' selected' : '');
       btn.setAttribute('aria-pressed', isSelected(opt.value));
       if (rows) {
-        btn.innerHTML = `${handSvg(opt.hand)}<span class="opt-text"><span class="opt-label">${opt.label}</span></span>`;
+        btn.innerHTML = `${HAND.svg(opt.hand)}<span class="opt-text"><span class="opt-label">${opt.label}</span></span>`;
       } else if (q.layout === 'image') {
-        btn.innerHTML = `${handSvg(opt.hand)}<span class="opt-label">${opt.label}</span>` +
+        btn.innerHTML = `${HAND.svg(opt.hand)}<span class="opt-label">${opt.label}</span>` +
           (opt.sub ? `<span class="opt-sub">${opt.sub}</span>` : '') +
           (q.type === 'multi' ? '<span class="opt-check" aria-hidden="true"></span>' : '');
       } else {
-        btn.innerHTML = `<span class="opt-mark">${'ABCD'[i]}</span><span class="opt-label">${opt.label}</span>`;
+        btn.innerHTML = `<span class="opt-mark">${'ABCDE'[i]}</span><span class="opt-label">${opt.label}</span>`;
       }
       btn.addEventListener('click', () => select(q, opt.value, btn));
       wrap.appendChild(btn);
@@ -202,13 +191,30 @@
       ],
       money: D.moneyTypes[state.answers.zaiun || 'none'],
       rare: (state.answers.rare || []).map((k) => D.rare[k]),
-      mood: D.moodMessages[state.answers.mood] || ''
+      mood: D.moodMessages[state.answers.mood] || '',
+      hand: myHand(kanjo, chino, seimei)
     };
   }
 
+  // 回答どおりの線を描いた「あなたの右手」
+  function myHand(kanjo, chino, seimei) {
+    const cap = (v) => v.charAt(0).toUpperCase() + v.slice(1);
+    const a = state.answers;
+    const hi = [`kanjo${cap(kanjo)}`, `chino${cap(chino)}`, `seimei${cap(seimei)}`];
+    const hiDashed = [];
+    if (a.unmei === 'clear') hi.push('unmei');
+    if (a.unmei === 'faint') hiDashed.push('unmei');
+    if (a.zaiun === 'clear') hi.push('zaiun');
+    if (a.zaiun === 'faint') hiDashed.push('zaiun');
+    const rare = a.rare || [];
+    if (rare.includes('masukake')) hi.splice(0, 2, 'masukake');
+    return { gold: hi.concat(rare.filter((k) => k !== 'masukake')), goldDashed: hiDashed, faint: [] };
+  }
+
   // ===== 結果 =====
-  function lineUrl(typeKey) {
-    return C.lineUrlByType[typeKey] || C.lineUrl;
+  // 優先順位：タイプ別URL → テーマ別URL → 共通URL（プロラインの登録シナリオを分けたい場合に設定）
+  function lineUrl(typeKey, themeKey) {
+    return C.lineUrlByType[typeKey] || C.lineUrlByTheme[themeKey] || C.lineUrl;
   }
 
   function paragraphs(text) {
@@ -217,7 +223,7 @@
 
   function renderResult(r) {
     const t = r.type;
-    const url = lineUrl(r.typeKey);
+    const url = lineUrl(r.typeKey, r.themeKey);
     const rare = r.rare.length
       ? `<div class="card card-rare">
           <p class="rare-badge">✦ レア線をお持ちです ✦</p>
@@ -240,13 +246,19 @@
 
       <div class="card">
         <h3 class="card-title">あなたの右手に出ているサイン</h3>
+        <div class="my-hand">${HAND.svg(r.hand)}</div>
         <ul class="signs">${r.signs.map((s) => `<li><strong>${s.title}</strong><span>${s.text}</span></li>`).join('')}</ul>
       </div>
 
       <div class="card">
-        <h3 class="card-title">あなたの本質</h3>
+        <h3 class="card-title">あなたの取扱説明書</h3>
         <div class="body-text">${paragraphs(t.core)}</div>
         <ul class="chips">${t.strengths.map((s) => `<li>${s}</li>`).join('')}</ul>
+        <dl class="manual">
+          <dt>力を発揮できるとき</dt><dd>${t.power}</dd>
+          <dt>疲れやすいとき</dt><dd>${t.tired}</dd>
+          <dt>取扱いのひとこと</dt><dd>${t.advice}</dd>
+        </dl>
       </div>
 
       <div class="card card-money">
@@ -259,7 +271,7 @@
       <div class="card">
         <h3 class="card-title">${r.theme.label}について</h3>
         <div class="teaser">
-          <p>${t.hints[r.themeKey]}</p>
+          <p>${t.hints[r.themeKey] || r.theme.hint}</p>
           <p>${r.theme.cliff}</p>
         </div>
       </div>

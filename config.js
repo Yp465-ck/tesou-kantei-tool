@@ -8,6 +8,10 @@ const SITE_CONFIG = {
   // 例: sasae: 'https://...'
   lineUrlByType: {},
 
+  // 「いちばん知りたいこと」ごとに別の登録URLを使う場合だけ設定
+  // 例: palm: 'https://...'（手相そのものに興味がある人 → 講座向けの配信へ）
+  lineUrlByTheme: {},
+
   reader: {
     name: '望月ゆい',
     kana: 'もちづき ゆい',

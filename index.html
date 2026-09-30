@@ -3,9 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>手相でわかる 本当の才能と金運タイプ診断｜望月ゆい</title>
-    <meta name="description" content="右手を見ながら答えるだけ。全8問・約2分・無料。あなたがまだ気づいていない才能と、これからの金運タイプがわかります。">
-    <meta property="og:title" content="手相でわかる 本当の才能と金運タイプ診断">
+    <title>手相でわかる あなたの取扱説明書｜才能・金運タイプ診断｜望月ゆい</title>
+    <meta name="description" content="右手を見ながら答えるだけ。全8問・約2分・無料。あなたが生まれ持った才能と、これからの金運タイプがわかります。">
+    <meta property="og:title" content="手相でわかる あなたの取扱説明書｜才能・金運タイプ診断">
     <meta property="og:description" content="右手を見ながら答えるだけ。全8問・約2分・無料。">
     <meta property="og:type" content="website">
     <meta name="theme-color" content="#1c1838">
@@ -20,9 +20,13 @@
     <main class="container">
         <!-- スタート -->
         <section class="screen" id="startScreen">
-            <div class="moon moon-large" aria-hidden="true"></div>
-            <p class="eyebrow">PALM READING DIAGNOSIS</p>
+            <div class="start-hero" aria-hidden="true">
+                <div class="moon moon-large"></div>
+                <div class="start-hand" id="startHand"></div>
+            </div>
+            <p class="eyebrow" id="startEyebrow"></p>
             <h1 class="start-title" id="startTitle"></h1>
+            <p class="start-subtitle" id="startSubtitle"></p>
             <ul class="badges" id="startBadges"></ul>
             <p class="start-lead" id="startLead"></p>
             <div class="hand-tip">
@@ -69,6 +73,7 @@
     <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
     <script src="config.js"></script>
+    <script src="hand.js"></script>
     <script src="palm-data.js"></script>
     <script src="app.js"></script>
 </body>
