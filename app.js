@@ -18,7 +18,12 @@
     $('#startEyebrow').textContent = D.meta.eyebrow;
     $('#startTitle').innerHTML = D.meta.title;
     $('#startSubtitle').textContent = D.meta.subtitle;
-    $('#startHand').innerHTML = HAND.svg({ gold: ['kanjoCurve', 'chinoStraight', 'seimeiNormal', 'unmei'], faint: [] });
+    $('#startHand').innerHTML = HAND.svg({
+      faint: ['kanjoCurve', 'chinoStraight', 'seimeiNormal', 'unmei'], deco: 'full', glyphs: true, labels: true
+    });
+    $('#heroCrescent').innerHTML = crescent();
+    $('#loadingMedallion').innerHTML = medallion('✦');
+    $('#sky').innerHTML = skySparkles();
     $('#startLead').innerHTML = D.meta.lead;
     $('#handTip').textContent = D.meta.handTip;
     $('#startBadges').innerHTML = D.meta.badges.map((b) => `<li>${b}</li>`).join('');
@@ -32,6 +37,48 @@
     });
     $('#backBtn').addEventListener('click', goBack);
     track('diagnosis_view');
+  }
+
+  // ===== 装飾 =====
+  // 太陽の光線をまとったメダイヨン（タイプの紋章・読み解き中の演出）
+  function medallion(inner) {
+    const c = 70;
+    const rays = Array.from({ length: 32 }, (_, i) => {
+      const a = (i * 360 / 32) * Math.PI / 180;
+      const r1 = 50;
+      const r2 = i % 2 ? 60 : 68;
+      const w = 0.05;
+      const pt = (r, t) => `${(c + r * Math.cos(t)).toFixed(1)},${(c + r * Math.sin(t)).toFixed(1)}`;
+      return `M${pt(r1, a - w)} L${pt(r2, a)} L${pt(r1, a + w)} Z`;
+    }).join(' ');
+    const dots = [0, 90, 180, 270].map((d) => {
+      const t = d * Math.PI / 180;
+      return HAND.sparkle(c + 44 * Math.cos(t), c + 44 * Math.sin(t), 3.2);
+    }).join('');
+    return `<svg viewBox="0 0 140 140" class="medallion">
+      <path d="${rays}" class="med-rays"/>
+      <circle cx="${c}" cy="${c}" r="50" class="med-disc"/>
+      <circle cx="${c}" cy="${c}" r="40" class="med-ring"/>
+      ${dots}
+      <text x="${c}" y="${c}" class="med-text" text-anchor="middle" dominant-baseline="central">${inner}</text>
+    </svg>`;
+  }
+
+  // 金の線画の三日月と、つり下がる星
+  function crescent() {
+    return `<svg viewBox="0 0 120 150" class="crescent">
+      <path d="M78,10 A44,44 0 1 0 110,82 A36,36 0 1 1 78,10 Z" class="cres-moon"/>
+      <path d="M40,96 L40,126 M58,104 L58,140 M22,84 L22,108" class="cres-thread"/>
+      ${HAND.sparkle(40, 130, 5)}${HAND.sparkle(58, 144, 4)}${HAND.sparkle(22, 112, 4)}
+    </svg>`;
+  }
+
+  // 背景にちりばめる星
+  function skySparkles() {
+    const pts = [[3, 8, 7], [93, 14, 9], [2, 46, 6], [95, 52, 7], [4, 88, 8], [92, 90, 6]];
+    return pts.map(([x, y, r]) =>
+      `<svg class="sky-star" style="left:${x}%;top:${y}%;width:${r * 2}px;height:${r * 2}px" viewBox="${-r} ${-r} ${r * 2} ${r * 2}">${HAND.sparkle(0, 0, r)}</svg>`
+    ).join('');
   }
 
   function avatar(size) {
@@ -237,16 +284,18 @@
       : '';
 
     $('#resultScreen').innerHTML = `
-      <p class="result-pre">あなたの才能タイプは</p>
-      <div class="result-emblem"><span>${t.kanji}</span></div>
-      <h2 class="result-name">${t.name}</h2>
-      <p class="result-catch">― ${t.catch} ―</p>
+      <div class="type-card">
+        <p class="result-pre">あなたの才能タイプは</p>
+        <div class="result-emblem">${medallion(t.kanji)}</div>
+        <h2 class="result-name">${t.name}</h2>
+        <p class="result-catch">${t.catch}</p>
+      </div>
 
       ${rare}
 
       <div class="card">
         <h3 class="card-title">あなたの右手に出ているサイン</h3>
-        <div class="my-hand">${HAND.svg(r.hand)}</div>
+        <div class="my-hand">${HAND.svg(Object.assign({ glyphs: true, deco: 'light' }, r.hand))}</div>
         <ul class="signs">${r.signs.map((s) => `<li><strong>${s.title}</strong><span>${s.text}</span></li>`).join('')}</ul>
       </div>
 
@@ -297,7 +346,7 @@
 
         <div class="gifts">
           <p class="gifts-title">🎁 LINE登録でお受け取りいただけるもの</p>
-          <ul>${C.gifts.map((g) => `<li>${g}</li>`).join('')}</ul>
+          <ul>${C.gifts.concat(C.giftsByTheme[r.themeKey] || []).map((g) => `<li>${g}</li>`).join('')}</ul>
         </div>
       </div>
 

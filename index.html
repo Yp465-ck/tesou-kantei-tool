@@ -8,20 +8,27 @@
     <meta property="og:title" content="手相でわかる あなたの取扱説明書｜才能・金運タイプ診断">
     <meta property="og:description" content="右手を見ながら答えるだけ。全8問・約2分・無料。">
     <meta property="og:type" content="website">
-    <meta name="theme-color" content="#1c1838">
+    <meta name="theme-color" content="#fbf7f4">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Shippori+Mincho:wght@500;700&family=Zen+Kaku+Gothic+New:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="sky" aria-hidden="true"></div>
+    <div class="sky" id="sky" aria-hidden="true"></div>
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+        <defs>
+            <linearGradient id="medFill" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0" stop-color="#fbe3ec"/><stop offset="0.55" stop-color="#f3e6f3"/><stop offset="1" stop-color="#dfd3f2"/>
+            </linearGradient>
+        </defs>
+    </svg>
 
     <main class="container">
         <!-- スタート -->
         <section class="screen" id="startScreen">
             <div class="start-hero" aria-hidden="true">
-                <div class="moon moon-large"></div>
+                <div class="hero-crescent" id="heroCrescent"></div>
                 <div class="start-hand" id="startHand"></div>
             </div>
             <p class="eyebrow" id="startEyebrow"></p>
@@ -54,7 +61,7 @@
         <!-- 読み解き中 -->
         <section class="screen hidden" id="loadingScreen">
             <div class="loading">
-                <div class="moon moon-spin" aria-hidden="true"></div>
+                <div class="loading-medallion" id="loadingMedallion" aria-hidden="true"></div>
                 <p class="loading-text" id="loadingText">右手の線を読み解いています…</p>
             </div>
         </section>

@@ -1,12 +1,13 @@
 // ===== 手のイラスト（SVG） =====
 // 「自分の右手のひらを見たときの向き」（左に小指、右に親指）で描いています。
+// 西洋手相の図版のような、フラットな手＋点線の手相線＋惑星記号＋星のデザインです。
 const HAND = (function () {
   // 指：[付け根の中心x, 付け根の中心y, 太さ, 長さ, 角度(度)]
   const FINGERS = [
-    [90, 192, 30, 122, -12], // 小指
-    [127, 174, 33, 160, -5], // 薬指
-    [165, 168, 34, 178, 0], // 中指
-    [203, 178, 33, 154, 7] // 人差し指
+    [90, 192, 31, 122, -12], // 小指
+    [127, 174, 34, 160, -5], // 薬指
+    [165, 168, 35, 178, 0], // 中指
+    [203, 178, 34, 154, 7] // 人差し指
   ];
   const THUMB =
     'M222,246 C246,236 276,212 298,196 C314,184 334,196 326,216 ' +
@@ -15,44 +16,58 @@ const HAND = (function () {
     'M74,196 C66,256 80,312 104,390 L210,390 C216,350 226,318 236,280 ' +
     'C244,248 236,210 226,182 C200,162 100,160 74,196 Z';
 
-  function finger([x, y, w, len, deg], extra) {
+  function finger([x, y, w, len, deg]) {
     return `<rect x="${-w / 2}" y="${-len}" width="${w}" height="${len + 24}" rx="${w / 2}" ` +
-      `transform="translate(${x},${y}) rotate(${deg})"${extra || ''}/>`;
+      `transform="translate(${x},${y}) rotate(${deg})"/>`;
   }
 
-  const PARTS = `<path d="${PALM}"/>` + FINGERS.map((f) => finger(f)).join('') + `<path d="${THUMB}"/>`;
+  const PARTS = `<path d="${PALM}"/>` + FINGERS.map(finger).join('') + `<path d="${THUMB}"/>`;
 
-  // 指の関節のしわと、指先のほんのりした赤み
-  function fingerDetail([x, y, w, len, deg], joints) {
-    const creases = joints
-      .map((r) => {
-        const cy = -len * r;
-        const hw = w * 0.3;
-        return `<path d="M${-hw},${cy} Q0,${cy + 3} ${hw},${cy}" class="hand-crease"/>`;
-      })
-      .join('');
+  // 指の関節（点線）
+  function joints([x, y, w, len, deg], ratios) {
     return `<g transform="translate(${x},${y}) rotate(${deg})">` +
-      `<ellipse cx="0" cy="${-len + w * 0.55}" rx="${w * 0.32}" ry="${w * 0.42}" fill="url(#handTipGlow)"/>` +
-      creases + '</g>';
+      ratios.map((r) => `<path d="M${-w / 2 + 4},${-len * r} L${w / 2 - 4},${-len * r}" class="hand-joint"/>`).join('') +
+      '</g>';
   }
 
   const DETAILS =
-    FINGERS.map((f) => fingerDetail(f, [0.36, 0.66])).join('') +
-    '<ellipse cx="312" cy="206" rx="12" ry="14" fill="url(#handTipGlow)"/>' +
-    '<path d="M276,228 Q288,236 292,250" class="hand-crease"/>' +
-    // 親指の付け根（金星丘）と小指側（月丘）のふくらみ
-    '<ellipse cx="206" cy="318" rx="46" ry="66" fill="url(#handMound)"/>' +
-    '<ellipse cx="96" cy="318" rx="34" ry="60" fill="url(#handMound)" opacity="0.7"/>';
+    FINGERS.map((f) => joints(f, [0.36, 0.66])).join('') +
+    '<path d="M262,233 L287,258" class="hand-joint"/>' +
+    // 手首の線（ラセッタ）
+    '<path d="M100,364 Q156,372 214,362" class="hand-joint"/>' +
+    '<path d="M102,378 Q156,386 212,376" class="hand-joint"/>';
 
-  // ページに一度だけ入れる共通の定義（グラデーション・切り抜き）
-  const DEFS = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
-    <linearGradient id="handSkin" gradientUnits="userSpaceOnUse" x1="0" y1="-20" x2="0" y2="390">
-      <stop offset="0" stop-color="#fff6f1"/><stop offset="1" stop-color="#fbe4d9"/>
-    </linearGradient>
-    <radialGradient id="handTipGlow"><stop offset="0" stop-color="#f7c6bd" stop-opacity="0.8"/><stop offset="1" stop-color="#f7c6bd" stop-opacity="0"/></radialGradient>
-    <radialGradient id="handMound"><stop offset="0" stop-color="#f0c4b2" stop-opacity="0.45"/><stop offset="1" stop-color="#f0c4b2" stop-opacity="0"/></radialGradient>
-    <clipPath id="handClip">${PARTS}</clipPath>
-  </defs></svg>`;
+  // ===== 惑星記号（丘の位置） =====
+  const GLYPHS = {
+    jupiter: 'M-5,-4 Q-2,-8 1,-4 Q2,-1 -5,4 L6,4 M3,-7 L3,8',
+    saturn: 'M-3,-8 L-3,6 M-6,-5 L0,-5 M-3,0 Q2,-5 5,0 Q6,4 2,8',
+    sun: 'M0,-6 A6,6 0 1 1 -0.01,-6 Z M0,-1 A1,1 0 1 1 -0.01,-1 Z',
+    mercury: 'M-4,-9 Q0,-5 4,-9 M0,-5 A4,4 0 1 1 -0.01,-5 Z M0,3 L0,9 M-3,6 L3,6',
+    venus: 'M0,-8 A5,5 0 1 1 -0.01,-8 Z M0,2 L0,10 M-4,6 L4,6',
+    moon: 'M3,-8 A8,8 0 1 0 3,8 A6,6 0 1 1 3,-8 Z',
+    mars: 'M-2,-1 A5,5 0 1 1 -2.01,-1 Z M1.5,-4.5 L7,-10 M3,-10 L7,-10 L7,-6'
+  };
+  const MOUNDS = [
+    ['jupiter', 206, 206], ['saturn', 165, 198], ['sun', 128, 202], ['mercury', 94, 214],
+    ['venus', 208, 318], ['moon', 98, 326], ['mars', 214, 262]
+  ];
+  const glyphs = MOUNDS.map(([k, x, y]) => `<path d="${GLYPHS[k]}" transform="translate(${x},${y}) scale(1.15)" class="hand-glyph"/>`).join('');
+
+  // ===== 星・月の飾り =====
+  function sparkle(x, y, r) {
+    const s = r * 0.28;
+    return `<path d="M${x},${y - r} Q${x + s},${y - s} ${x + r},${y} Q${x + s},${y + s} ${x},${y + r} ` +
+      `Q${x - s},${y + s} ${x - r},${y} Q${x - s},${y - s} ${x},${y - r} Z" class="deco-star"/>`;
+  }
+  const DECO_LIGHT = sparkle(40, 120, 9) + sparkle(300, 100, 7) + sparkle(318, 300, 9) +
+    `<circle cx="52" cy="160" r="2.5" class="deco-dot"/><circle cx="296" cy="140" r="2.5" class="deco-dot"/>`;
+  const DECO_FULL = DECO_LIGHT + sparkle(30, 290, 7) + sparkle(270, 20, 6) + sparkle(46, 40, 5) +
+    `<path d="M24,210 A10,10 0 1 0 24,230 A8,8 0 1 1 24,210 Z" class="deco-moon"/>` +
+    `<path d="M318,236 A9,9 0 1 0 318,254 A7,7 0 1 1 318,236 Z" class="deco-moon"/>` +
+    `<circle cx="36" cy="340" r="2.5" class="deco-dot"/><circle cx="330" cy="200" r="2" class="deco-dot"/>`;
+  const BLOB =
+    '<path d="M60,40 C120,-10 240,0 290,60 C340,120 330,220 320,300 C305,380 230,400 160,396 ' +
+    'C80,392 20,350 22,260 C24,180 10,90 60,40 Z" class="deco-blob"/>';
 
   const LINES = {
     kanjoStraight: 'M74,222 Q140,217 204,212',
@@ -71,32 +86,41 @@ const HAND = (function () {
     solomon: 'M190,196 Q206,214 224,194'
   };
 
-  // 実際の手のしわ風に、うっすら描く線
   const NATURAL = ['kanjoCurve', 'chinoStraight', 'seimeiNormal'];
 
+  // spec: { hi, hiDashed, gold, goldDashed, faint, deco: 'light'|'full', glyphs, labels }
   function svg(spec) {
     spec = spec || {};
     const path = (k, cls) => `<path d="${LINES[k]}" class="${cls}"/>`;
     const faint = (spec.faint || NATURAL).map((k) => path(k, 'ln-faint')).join('');
     const hi = (spec.hi || []).map((k) => path(k, 'ln-glow') + path(k, 'ln-hi')).join('');
-    const dashed = (spec.hiDashed || []).map((k) => path(k, 'ln-hi ln-dashed')).join('');
+    const dashed = (spec.hiDashed || []).map((k) => path(k, 'ln-glow') + path(k, 'ln-hi ln-dashed')).join('');
     const gold = (spec.gold || []).map((k) => path(k, 'ln-gold')).join('') +
       (spec.goldDashed || []).map((k) => path(k, 'ln-gold ln-dashed')).join('');
+    const deco = spec.deco === 'full' ? BLOB + DECO_FULL : spec.deco === 'light' ? DECO_LIGHT : '';
+    const labels = spec.labels
+      ? '<text x="64" y="214" class="hand-label" text-anchor="end">感情線</text>' +
+        '<text x="80" y="276" class="hand-label" text-anchor="end">頭脳線</text>' +
+        '<text x="238" y="372" class="hand-label">生命線</text>' +
+        '<text x="152" y="300" class="hand-label" text-anchor="end">運命線</text>'
+      : '';
     return `<svg viewBox="10 -24 336 408" class="hand" aria-hidden="true">
-      <g class="hand-outline">${PARTS}</g>
-      <g fill="url(#handSkin)">${PARTS}</g>
-      <g clip-path="url(#handClip)">${DETAILS}${faint}</g>
-      ${gold}${dashed}${hi}</svg>`;
+      ${deco}
+      <g class="hand-shade" transform="translate(7,5)">${PARTS}</g>
+      <g class="hand-fill">${PARTS}</g>
+      <g clip-path="url(#handClip)">${DETAILS}${spec.glyphs ? glyphs : ''}${faint}</g>
+      ${gold}${dashed}${hi}${labels}</svg>`;
   }
 
+  // ページに一度だけ入れる共通の定義（切り抜き）
   function mount() {
-    if (!document.getElementById('handDefs')) {
-      const wrap = document.createElement('div');
-      wrap.id = 'handDefs';
-      wrap.innerHTML = DEFS;
-      document.body.prepend(wrap);
-    }
+    if (document.getElementById('handDefs')) return;
+    const wrap = document.createElement('div');
+    wrap.id = 'handDefs';
+    wrap.innerHTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
+      <clipPath id="handClip">${PARTS}</clipPath></defs></svg>`;
+    document.body.prepend(wrap);
   }
 
-  return { svg, mount, LINES };
+  return { svg, mount, LINES, sparkle };
 })();
